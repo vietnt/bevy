@@ -137,6 +137,9 @@ impl<'a> AssetPath<'a> {
         let mut source_range = None;
         let mut path_range = 0..asset_path.len();
         let mut label_range = None;
+        
+        let mut source_from = 0;
+        let mut last_splash = 0;
 
         // Loop through the characters of the passed in &str to accomplish the following:
         // 1. Search for the first instance of the `://` substring. If the `://` substring is found,
@@ -151,9 +154,11 @@ impl<'a> AssetPath<'a> {
         for (index, char) in chars {
             match char {
                 ':' => {
+                    source_from = last_splash;
                     source_delimiter_chars_matched = 1;
                 }
                 '/' => {
+                    last_splash = index;
                     match source_delimiter_chars_matched {
                         1 => {
                             source_delimiter_chars_matched = 2;
@@ -165,7 +170,7 @@ impl<'a> AssetPath<'a> {
                                 if label_range.is_some() {
                                     return Err(ParseAssetPathError::InvalidSourceSyntax);
                                 }
-                                source_range = Some(0..index - 2);
+                                source_range = Some(source_from..index - 2);
                                 path_range.start = index + 1;
                             }
                             last_found_source_index = index - 2;
@@ -515,11 +520,12 @@ impl From<&'static Path> for AssetPath<'static> {
 impl From<PathBuf> for AssetPath<'static> {
     #[inline]
     fn from(path: PathBuf) -> Self {
-        Self {
-            source: AssetSourceId::Default,
-            path: path.into(),
-            label: None,
-        }
+        AssetPath::parse(asset_path.as_str()).into_owned()
+//         Self {
+//             source: AssetSourceId::Default,
+//             path: path.into(),
+//             label: None,
+//         }
     }
 }
 
