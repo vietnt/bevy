@@ -137,7 +137,7 @@ impl<'a> AssetPath<'a> {
         let mut source_range = None;
         let mut path_range = 0..asset_path.len();
         let mut label_range = None;
-        
+
         let mut source_from = 0;
         let mut last_splash = 0;
 
@@ -520,12 +520,12 @@ impl From<&'static Path> for AssetPath<'static> {
 impl From<PathBuf> for AssetPath<'static> {
     #[inline]
     fn from(path: PathBuf) -> Self {
-        AssetPath::parse(path.as_str().unwrap()).into_owned()
-//         Self {
-//             source: AssetSourceId::Default,
-//             path: path.into(),
-//             label: None,
-//         }
+        AssetPath::parse(path.to_str().unwrap()).into_owned()
+        //         Self {
+        //             source: AssetSourceId::Default,
+        //             path: path.into(),
+        //             label: None,
+        //         }
     }
 }
 
