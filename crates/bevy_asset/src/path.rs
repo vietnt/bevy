@@ -520,7 +520,7 @@ impl From<&'static Path> for AssetPath<'static> {
 impl From<PathBuf> for AssetPath<'static> {
     #[inline]
     fn from(path: PathBuf) -> Self {
-        AssetPath::parse(asset_path.as_str()).into_owned()
+        AssetPath::parse(path.as_str().unwrap()).into_owned()
 //         Self {
 //             source: AssetSourceId::Default,
 //             path: path.into(),
