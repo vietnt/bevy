@@ -1,5 +1,5 @@
 [package]
-name = "bevy"
+name = "bevy-fork"
 version = "0.14.2"
 edition = "2021"
 categories = ["game-engines", "graphics", "gui", "rendering"]
