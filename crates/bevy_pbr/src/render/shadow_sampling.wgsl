@@ -73,37 +73,53 @@ fn sample_shadow_map_castano_thirteen(light_local: vec2<f32>, depth: f32, array_
     base_uv -= 0.5;
     base_uv *= inv_shadow_map_size;
 
-    let uw0 = (4.0 - 3.0 * s);
-    let uw1 = 7.0;
-    let uw2 = (1.0 + 3.0 * s);
-
-    let u0 = (3.0 - 2.0 * s) / uw0 - 2.0;
-    let u1 = (3.0 + s) / uw1;
-    let u2 = s / uw2 + 2.0;
-
-    let vw0 = (4.0 - 3.0 * t);
-    let vw1 = 7.0;
-    let vw2 = (1.0 + 3.0 * t);
-
-    let v0 = (3.0 - 2.0 * t) / vw0 - 2.0;
-    let v1 = (3.0 + t) / vw1;
-    let v2 = t / vw2 + 2.0;
+    let uw0 = (3.0 - 2.0 * s);
+    let uw1 = 1.0 + 2.0 * s;
+    let u0 = (2.0 - s) / uw0 - 1.0;
+    let u1 = s / uw1 + 1.0;
+    let vw0 = 3.0 - 2.0 * t;
+    let vw1 = 1.0 + 2.0 * t;
+    let v0 = (2.0 - t) / vw0 - 1.0;
+    let v1 = t / vw1 + 1.0;
 
     var sum = 0.0;
+    sum += uw0 * vw0 * sample_shadow_map_hardware(base_uv + vec2(u0, v0) * inv_shadow_map_size, depth, array_index);
+    sum += uw1 * vw0 * sample_shadow_map_hardware(base_uv + vec2(u1, v0) * inv_shadow_map_size, depth, array_index);
+    sum += uw0 * vw1 * sample_shadow_map_hardware(base_uv + vec2(u0, v1) * inv_shadow_map_size, depth, array_index);
+    sum += uw1 * vw1 * sample_shadow_map_hardware(base_uv + vec2(u1, v1) * inv_shadow_map_size, depth, array_index);
+    return sum * (1.0 / 16.0);
 
-    sum += uw0 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u0, v0) * inv_shadow_map_size), depth, array_index);
-    sum += uw1 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u1, v0) * inv_shadow_map_size), depth, array_index);
-    sum += uw2 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u2, v0) * inv_shadow_map_size), depth, array_index);
+    // let uw0 = (4.0 - 3.0 * s);
+    // let uw1 = 7.0;
+    // let uw2 = (1.0 + 3.0 * s);
 
-    sum += uw0 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u0, v1) * inv_shadow_map_size), depth, array_index);
-    sum += uw1 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u1, v1) * inv_shadow_map_size), depth, array_index);
-    sum += uw2 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u2, v1) * inv_shadow_map_size), depth, array_index);
+    // let u0 = (3.0 - 2.0 * s) / uw0 - 2.0;
+    // let u1 = (3.0 + s) / uw1;
+    // let u2 = s / uw2 + 2.0;
 
-    sum += uw0 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u0, v2) * inv_shadow_map_size), depth, array_index);
-    sum += uw1 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u1, v2) * inv_shadow_map_size), depth, array_index);
-    sum += uw2 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u2, v2) * inv_shadow_map_size), depth, array_index);
+    // let vw0 = (4.0 - 3.0 * t);
+    // let vw1 = 7.0;
+    // let vw2 = (1.0 + 3.0 * t);
 
-    return sum * (1.0 / 144.0);
+    // let v0 = (3.0 - 2.0 * t) / vw0 - 2.0;
+    // let v1 = (3.0 + t) / vw1;
+    // let v2 = t / vw2 + 2.0;
+
+    // var sum = 0.0;
+
+    // sum += uw0 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u0, v0) * inv_shadow_map_size), depth, array_index);
+    // sum += uw1 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u1, v0) * inv_shadow_map_size), depth, array_index);
+    // sum += uw2 * vw0 * sample_shadow_map_hardware(base_uv + (vec2(u2, v0) * inv_shadow_map_size), depth, array_index);
+
+    // sum += uw0 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u0, v1) * inv_shadow_map_size), depth, array_index);
+    // sum += uw1 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u1, v1) * inv_shadow_map_size), depth, array_index);
+    // sum += uw2 * vw1 * sample_shadow_map_hardware(base_uv + (vec2(u2, v1) * inv_shadow_map_size), depth, array_index);
+
+    // sum += uw0 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u0, v2) * inv_shadow_map_size), depth, array_index);
+    // sum += uw1 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u1, v2) * inv_shadow_map_size), depth, array_index);
+    // sum += uw2 * vw2 * sample_shadow_map_hardware(base_uv + (vec2(u2, v2) * inv_shadow_map_size), depth, array_index);
+
+    // return sum * (1.0 / 144.0);
 }
 
 fn map(min1: f32, max1: f32, min2: f32, max2: f32, value: f32) -> f32 {

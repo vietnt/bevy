@@ -37,6 +37,7 @@ mod prepass;
 mod render;
 mod ssao;
 mod ssr;
+mod static_shadow;
 mod volumetric_fog;
 
 use bevy_color::{Color, LinearRgba};
@@ -59,6 +60,9 @@ pub use ssr::*;
 pub use volumetric_fog::*;
 
 pub mod prelude {
+    pub use crate::static_shadow::StaticShadowCaster;
+    pub use crate::static_shadow::StaticShadowRequestUpdate;
+
     #[doc(hidden)]
     pub use crate::{
         bundle::{
@@ -85,6 +89,10 @@ pub mod graph {
     pub enum NodePbr {
         /// Label for the shadow pass node.
         ShadowPass,
+        /// Label for the shadow copy pass node.
+        ShadowCopyPass,
+        /// Label for the shadow dynamic pass node.
+        ShadowDynamicPass,
         /// Label for the screen space ambient occlusion render node.
         ScreenSpaceAmbientOcclusion,
         DeferredLightingPass,
@@ -411,13 +419,21 @@ impl Plugin for PbrPlugin {
                     prepare_clusters.in_set(RenderSet::PrepareResources),
                 ),
             )
+            .init_resource::<static_shadow::StaticShadowMap>()
             .init_resource::<LightMeta>();
 
-        let shadow_pass_node = ShadowPassNode::new(render_app.world_mut());
+        let shadow_pass_node = ShadowPassNode::new(render_app.world_mut(), 0);
+        let copy_shadow_pass_node = ShadowPassNode::new(render_app.world_mut(), 1);
+        let dynamic_shadow_pass_node = ShadowPassNode::new(render_app.world_mut(), 2);
+
         let mut graph = render_app.world_mut().resource_mut::<RenderGraph>();
         let draw_3d_graph = graph.get_sub_graph_mut(Core3d).unwrap();
         draw_3d_graph.add_node(NodePbr::ShadowPass, shadow_pass_node);
-        draw_3d_graph.add_node_edge(NodePbr::ShadowPass, Node3d::StartMainPass);
+        draw_3d_graph.add_node(NodePbr::ShadowCopyPass, copy_shadow_pass_node);
+        draw_3d_graph.add_node(NodePbr::ShadowDynamicPass, dynamic_shadow_pass_node);
+        draw_3d_graph.add_node_edge(NodePbr::ShadowPass, NodePbr::ShadowCopyPass);
+        draw_3d_graph.add_node_edge(NodePbr::ShadowCopyPass, NodePbr::ShadowDynamicPass);
+        draw_3d_graph.add_node_edge(NodePbr::ShadowDynamicPass, Node3d::StartMainPass);
     }
 
     fn finish(&self, app: &mut App) {

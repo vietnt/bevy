@@ -416,6 +416,8 @@ bitflags::bitflags! {
         /// The mesh had morph targets last frame and so they should be taken
         /// into account for motion vector computation.
         const HAS_PREVIOUS_MORPH      = 1 << 4;
+        /// mesh is dynamic shadow caster
+        const STATIC_SHADOW_CASTER = 1 << 5;
     }
 }
 
@@ -520,6 +522,7 @@ impl RenderMeshInstanceShared {
         handle: &Handle<Mesh>,
         not_shadow_caster: bool,
         no_automatic_batching: bool,
+        is_static_shadow_caster: bool,
     ) -> Self {
         let mut mesh_instance_flags = RenderMeshInstanceFlags::empty();
         mesh_instance_flags.set(RenderMeshInstanceFlags::SHADOW_CASTER, !not_shadow_caster);
@@ -530,6 +533,10 @@ impl RenderMeshInstanceShared {
         mesh_instance_flags.set(
             RenderMeshInstanceFlags::HAS_PREVIOUS_TRANSFORM,
             previous_transform.is_some(),
+        );
+        mesh_instance_flags.set(
+            RenderMeshInstanceFlags::STATIC_SHADOW_CASTER,
+            is_static_shadow_caster,
         );
 
         RenderMeshInstanceShared {
@@ -814,6 +821,7 @@ pub fn extract_meshes_for_cpu_building(
             Has<TransmittedShadowReceiver>,
             Has<NotShadowCaster>,
             Has<NoAutomaticBatching>,
+            Has<static_shadow::StaticShadowCaster>,
             Has<VisibilityRange>,
         )>,
     >,
@@ -831,6 +839,7 @@ pub fn extract_meshes_for_cpu_building(
             transmitted_receiver,
             not_shadow_caster,
             no_automatic_batching,
+            static_shadow_caster,
             visibility_range,
         )| {
             if !view_visibility.get() {
@@ -854,6 +863,7 @@ pub fn extract_meshes_for_cpu_building(
                 handle,
                 not_shadow_caster,
                 no_automatic_batching,
+                static_shadow_caster,
             );
 
             let world_from_local = transform.affine();
@@ -918,6 +928,7 @@ pub fn extract_meshes_for_gpu_building(
             Has<NotShadowCaster>,
             Has<NoAutomaticBatching>,
             Has<VisibilityRange>,
+            Has<static_shadow::StaticShadowCaster>,
         )>,
     >,
     cameras_query: Extract<Query<(), (With<Camera>, With<GpuCulling>)>>,
@@ -952,6 +963,7 @@ pub fn extract_meshes_for_gpu_building(
             not_shadow_caster,
             no_automatic_batching,
             visibility_range,
+            dynamic_shadow_caster,
         )| {
             if !view_visibility.get() {
                 return;
@@ -974,6 +986,7 @@ pub fn extract_meshes_for_gpu_building(
                 handle,
                 not_shadow_caster,
                 no_automatic_batching,
+                dynamic_shadow_caster,
             );
 
             let lightmap_uv_rect =

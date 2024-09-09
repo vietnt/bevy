@@ -29,6 +29,7 @@ pub struct CachedTexture {
 #[derive(Resource, Default)]
 pub struct TextureCache {
     textures: HashMap<TextureDescriptor<'static>, Vec<CachedTextureMeta>>,
+    lookup_by_name: HashMap<String, CachedTexture>,
 }
 
 impl TextureCache {
@@ -39,6 +40,8 @@ impl TextureCache {
         render_device: &RenderDevice,
         descriptor: TextureDescriptor<'static>,
     ) -> CachedTexture {
+        let name = descriptor.label.map(|s| s.to_string());
+        let dc = descriptor.clone();
         match self.textures.entry(descriptor) {
             Entry::Occupied(mut entry) => {
                 for texture in entry.get_mut().iter_mut() {
@@ -74,6 +77,17 @@ impl TextureCache {
                     taken: true,
                     frames_since_last_use: 0,
                 }]);
+
+                if let Some(name) = name {
+                    self.lookup_by_name.insert(
+                        name,
+                        CachedTexture {
+                            texture: texture.clone(),
+                            default_view: default_view.clone(),
+                        },
+                    );
+                }
+
                 CachedTexture {
                     texture,
                     default_view,
@@ -85,6 +99,9 @@ impl TextureCache {
     /// Returns `true` if the texture cache contains no textures.
     pub fn is_empty(&self) -> bool {
         self.textures.is_empty()
+    }
+    pub fn get_by_name(&self, name: &str) -> Option<CachedTexture> {
+        self.lookup_by_name.get(name).cloned()
     }
 
     /// Updates the cache and only retains recently used textures.
