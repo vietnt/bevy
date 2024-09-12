@@ -515,8 +515,6 @@ impl From<&'static Path> for AssetPath<'static> {
 impl From<PathBuf> for AssetPath<'static> {
     #[inline]
     fn from(path: PathBuf) -> Self {
-        println!("path: {:?}", path);
-        println!("parsed: {:?}", AssetPath::parse(path.to_str().unwrap()));
         AssetPath::parse(path.to_str().unwrap()).into_owned()
         // Self {
         //     source: AssetSourceId::Default,
