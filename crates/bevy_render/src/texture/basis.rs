@@ -74,7 +74,8 @@ pub fn basis_buffer_to_image(
                 "Array or volume texture has inconsistent number of mip levels. Image {image_index} has {mip_level_count} but image 0 has {image0_mip_level_count}",
             )));
         }
-        for level_index in 1..mip_level_count {
+        let mut start = if mip_level_count > 1 { 1 } else { 0 };
+        for level_index in start..mip_level_count {
             let mut data = transcoder
                 .transcode_image_level(
                     buffer,
@@ -98,9 +99,9 @@ pub fn basis_buffer_to_image(
     // Then prepare the Image
     let mut image = Image::default();
     image.texture_descriptor.size = Extent3d {
-        width: image0_info.m_orig_width / 2,
-        height: image0_info.m_orig_height / 2,
-        depth_or_array_layers: image_count - 1,
+        width: image0_info.m_orig_width / (if mip_level_count > 1 { 2 } else { 1 }),
+        height: image0_info.m_orig_height / (if mip_level_count > 1 { 2 } else { 1 }),
+        depth_or_array_layers: image_count - (if mip_level_count > 1 { 1 } else { 0 }),
     }
     .physical_size(texture_format);
     image.texture_descriptor.mip_level_count = image0_mip_level_count;
