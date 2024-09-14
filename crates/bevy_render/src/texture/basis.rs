@@ -104,7 +104,7 @@ pub fn basis_buffer_to_image(
         depth_or_array_layers: image_count, // - (if image0_mip_level_count > 1 { 1 } else { 0 }),
     }
     .physical_size(texture_format);
-    image.texture_descriptor.mip_level_count = image0_mip_level_count;
+    image.texture_descriptor.mip_level_count = image0_mip_level_count - 1;
     image.texture_descriptor.format = texture_format;
     image.texture_descriptor.dimension = match texture_type {
         BasisTextureType::TextureType2D
