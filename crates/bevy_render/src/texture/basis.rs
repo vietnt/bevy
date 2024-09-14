@@ -99,9 +99,9 @@ pub fn basis_buffer_to_image(
     // Then prepare the Image
     let mut image = Image::default();
     image.texture_descriptor.size = Extent3d {
-        width: image0_info.m_orig_width / (if image_count > 1 { 2 } else { 1 }),
-        height: image0_info.m_orig_height / (if image_count > 1 { 2 } else { 1 }),
-        depth_or_array_layers: image_count - (if image_count > 1 { 1 } else { 0 }),
+        width: image0_info.m_orig_width / (if image0_mip_level_count > 1 { 2 } else { 1 }),
+        height: image0_info.m_orig_height / (if image0_mip_level_count > 1 { 2 } else { 1 }),
+        depth_or_array_layers: image_count, // - (if image0_mip_level_count > 1 { 1 } else { 0 }),
     }
     .physical_size(texture_format);
     image.texture_descriptor.mip_level_count = image0_mip_level_count;
